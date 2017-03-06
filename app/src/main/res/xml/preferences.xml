@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Sensor Settings">
+
+        <SwitchPreference
+            android:id="@+id/pref_enable_sensors"
+            android:key="pref_enable_sensors"
+            android:title="Enable Sensor Recordings"
+            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Audio Settings">
+
+        <SwitchPreference
+            android:id="@+id/pref_enable_audio"
+            android:key="pref_enable_audio"
+            android:title="Enable Periodic Audio Recordings"
+            android:defaultValue="false"/>
+        <EditTextPreference
+            android:id="@+id/pref_audio_duration"
+            android:key="pref_audio_duration"
+            android:title="Audio Recording Duration"
+            android:inputType="number"
+            android:defaultValue="30"/>
+        <EditTextPreference
+            android:id="@+id/pref_audio_delay"
+            android:key="pref_audio_delay"
+            android:title="Delay Between Audio Recordings"
+            android:inputType="number"
+            android:defaultValue="12"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Other Settings">
+
+        <EditTextPreference
+            android:id="@+id/pref_id"
+            android:key="pref_id"
+            android:title="Patient ID"/>
+        <SwitchPreference
+            android:id="@+id/pref_blackout_toggle"
+            android:key="pref_blackout_toggle"
+            android:title="Enable School Blackout"
+            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

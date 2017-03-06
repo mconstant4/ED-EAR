@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ED EAR 1</string>
+
+    <!--Lock Screen Strings-->
+    <string name="ls_set_pattern_title_verify">Draw old unlock pattern</string>
+    <string name="ls_set_pattern_title_set">Draw new unlock pattern</string>
+    <string name="ls_set_pattern_title_confirm">Confirm new unlock pattern</string>
+    <string name="ls_set_pattern_cancel">Cancel</string>
+    <string name="ls_confirm_pattern_title">Draw unlock pattern</string>
+</resources>
