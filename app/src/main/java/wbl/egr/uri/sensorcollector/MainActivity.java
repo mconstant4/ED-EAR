@@ -86,7 +86,9 @@ public class MainActivity extends AppCompatActivity {
         String date = new SimpleDateFormat("MM_dd_yyyy", Locale.US).format(new Date());
         File rootDir = new File(directory, date);
         if (!rootDir.exists()) {
-            rootDir.mkdirs();
+            if (rootDir.mkdirs()) {
+                Log.d("MAIN", "Made parent directories");
+            }
         }
         return rootDir;
     }
