@@ -12,6 +12,7 @@ import com.microsoft.band.sensors.HeartRateConsentListener;
 import java.lang.ref.WeakReference;
 
 import wbl.egr.uri.sensorcollector.SettingsActivity;
+import wbl.egr.uri.sensorcollector.services.BandCollectionService;
 
 /**
  * Created by mconstant on 2/23/17.
@@ -48,6 +49,7 @@ public class RequestHeartRateTask extends AsyncTask<WeakReference<Activity>, Voi
                     BandClient bandClient = bandClientManager.create(activityWeakReference.get(), pairedBands[0]);
                     bandClient.connect().await();
                     bandClient.getSensorManager().requestHeartRateConsent(activityWeakReference.get(), mHeartRateConsentListener);
+                    bandClient.disconnect().await();
                 }
             } catch (Exception e) {
                 e.printStackTrace();

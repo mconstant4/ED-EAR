@@ -18,6 +18,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import wbl.egr.uri.sensorcollector.R;
 import wbl.egr.uri.sensorcollector.SettingsActivity;
@@ -128,16 +129,10 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                         }
                     }
 
-                    if (!SettingsActivity.getBoolean(getActivity(), SettingsActivity.KEY_HR_CONSENT, false)) {
-                        new RequestHeartRateTask().execute(new WeakReference<Activity>(getActivity()));
-                    }
-
                     BandCollectionService.connect(getActivity());
+                    new RequestHeartRateTask().execute(new WeakReference<Activity>(getActivity()));
                 } else {
                     BandCollectionService.disconnect(getActivity());
-
-                    SettingsActivity.putBoolean(getActivity(), key, false);
-                    ((SettingsActivity) getActivity()).refresh();
                 }
                 break;
             case KEY_AUDIO_ENABLE:

@@ -26,6 +26,7 @@ import wbl.egr.uri.sensorcollector.SettingsActivity;
 import wbl.egr.uri.sensorcollector.receivers.TestBandReceiver;
 import wbl.egr.uri.sensorcollector.services.AudioRecordManager;
 import wbl.egr.uri.sensorcollector.services.BandCollectionService;
+import wbl.egr.uri.sensorcollector.services.DataLogService;
 
 /**
  * Created by mconstant on 2/23/17.
@@ -93,6 +94,7 @@ public class TestingFragment extends Fragment {
 
                         if (audioResult == 0 && sensorResult == 0) {
                             //Test Passed
+                            DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), "success", "Date,Time,Result");
                             final MaterialDialog resultDialog = new MaterialDialog.Builder(getActivity())
                                     .title("Success!")
                                     .customView(R.layout.view_test_success, true)
@@ -118,6 +120,8 @@ public class TestingFragment extends Fragment {
                                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                                 AudioRecordManager.start(getActivity(), AudioRecordManager.ACTION_AUDIO_CANCEL);
                                                 AudioRecordManager.start(getActivity(), AudioRecordManager.ACTION_AUDIO_START);
+                                                SettingsActivity.putBoolean(getActivity(), SettingsActivity.KEY_SENSOR_ENABLE, true);
+                                                SettingsActivity.putBoolean(getActivity(), SettingsActivity.KEY_AUDIO_ENABLE, true);
                                             }
                                         })
                                         .canceledOnTouchOutside(false)
@@ -242,25 +246,31 @@ public class TestingFragment extends Fragment {
         }
         Calendar currentTimeThreshold = Calendar.getInstance();
 
+        //Check nightly blackout
+        Calendar currentTime = Calendar.getInstance();
+        Calendar calendar1am = Calendar.getInstance();
+        calendar1am.set(Calendar.HOUR_OF_DAY, 1);
+        Calendar calendar5am = Calendar.getInstance();
+        calendar5am.set(Calendar.HOUR_OF_DAY, 5);
+
+        if (currentTime.compareTo(calendar1am) > 0 && currentTime.compareTo(calendar5am) < 0) {
+            //In nightly blackout time
+            //Check from initial blackout time
+            currentTimeThreshold.setTimeInMillis(calendar1am.getTimeInMillis());
+            currentTimeThreshold.set(Calendar.MINUTE, currentTimeThreshold.get(Calendar.MINUTE)-15);
+        }
+
+
+        //check school blackout
         if (SettingsActivity.getBoolean(getActivity(), SettingsActivity.KEY_BLACKOUT_TOGGLE, false)) {
             //Check if in nightly blackout
-            Calendar currentTime = Calendar.getInstance();
-            Calendar calendar1am = Calendar.getInstance();
-            calendar1am.set(Calendar.HOUR_OF_DAY, 1);
-            Calendar calendar5am = Calendar.getInstance();
-            calendar5am.set(Calendar.HOUR_OF_DAY, 5);
             Calendar calendar730am = Calendar.getInstance();
             calendar730am.set(Calendar.HOUR_OF_DAY, 7);
             calendar730am.set(Calendar.MINUTE, 30);
             Calendar calendar3pm = Calendar.getInstance();
             calendar3pm.set(Calendar.HOUR_OF_DAY, 15);
 
-            if (currentTime.compareTo(calendar1am) > 0 && currentTime.compareTo(calendar5am) < 0) {
-                //In nightly blackout time
-                //Check from initial blackout time
-                currentTimeThreshold.setTimeInMillis(calendar1am.getTimeInMillis());
-                currentTimeThreshold.set(Calendar.MINUTE, currentTimeThreshold.get(Calendar.MINUTE)-15);
-            } else if (currentTime.compareTo(calendar730am) > 0 && currentTime.compareTo(calendar3pm) < 0) {
+            if (currentTime.compareTo(calendar730am) > 0 && currentTime.compareTo(calendar3pm) < 0) {
                 //In school blackout
                 //Check from initial blackout time
                 currentTimeThreshold.setTimeInMillis(calendar730am.getTimeInMillis());

@@ -260,49 +260,65 @@ public class BandCollectionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
-        if (intent == null || intent.getAction() == null) {
-            return START_NOT_STICKY;
-        }
-
-        switch (intent.getAction()) {
-            case ACTION_CONNECT:
-                connect();
-                break;
-            case ACTION_DISCONNECT:
-                disconnect();
-                break;
-            case ACTION_START_STREAMING:
-                startStreaming();
-                break;
-            case ACTION_STOP_STREAMING:
-                stopStreaming();
-                break;
-            case ACTION_GET_INFO:
-                getInfo();
-                break;
-            case ACTION_TEST_SERVICE:
-                Intent testIntent = new Intent(TestBandReceiver.INTENT_FILTER.getAction(0));
-                testIntent.putExtra(TestBandReceiver.EXTRA_CHECK, true);
-                sendBroadcast(testIntent);
-                final Context context = this;
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            stopStreaming();
-                            Thread.sleep(250);
-                            disconnect(context);
-                            Thread.sleep(250);
-                            connect(context);
-                            Thread.sleep(250);
-                            startStream(context);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+        if (flags == START_FLAG_REDELIVERY) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        connect();
+                        Thread.sleep(250);
+                        startStreaming();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                }).start();
-            default:
-                break;
+                }
+            }).start();
+        } else {
+
+            if (intent == null || intent.getAction() == null) {
+                return START_NOT_STICKY;
+            }
+
+            switch (intent.getAction()) {
+                case ACTION_CONNECT:
+                    connect();
+                    break;
+                case ACTION_DISCONNECT:
+                    disconnect();
+                    break;
+                case ACTION_START_STREAMING:
+                    startStreaming();
+                    break;
+                case ACTION_STOP_STREAMING:
+                    stopStreaming();
+                    break;
+                case ACTION_GET_INFO:
+                    getInfo();
+                    break;
+                case ACTION_TEST_SERVICE:
+                    Intent testIntent = new Intent(TestBandReceiver.INTENT_FILTER.getAction(0));
+                    testIntent.putExtra(TestBandReceiver.EXTRA_CHECK, true);
+                    sendBroadcast(testIntent);
+                    final Context context = this;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                stopStreaming();
+                                Thread.sleep(250);
+                                disconnect(context);
+                                Thread.sleep(250);
+                                connect(context);
+                                Thread.sleep(250);
+                                startStream(context);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                default:
+                    break;
+            }
         }
 
         return START_REDELIVER_INTENT;

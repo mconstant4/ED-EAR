@@ -41,7 +41,7 @@ public class SettingsActivity extends AppCompatActivity implements SettingsInter
     public static void putBoolean(Context context, String key, boolean value) {
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
         editor.putBoolean(key, value);
-        editor.apply();
+        editor.commit();
     }
 
     public static boolean getBoolean(Context context, String key, boolean defaultValue) {
