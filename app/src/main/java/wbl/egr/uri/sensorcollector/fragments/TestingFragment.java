@@ -17,8 +17,10 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 import wbl.egr.uri.sensorcollector.MainActivity;
 import wbl.egr.uri.sensorcollector.R;
@@ -94,7 +96,11 @@ public class TestingFragment extends Fragment {
 
                         if (audioResult == 0 && sensorResult == 0) {
                             //Test Passed
-                            DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), "success", "Date,Time,Result");
+                            Calendar calendar = Calendar.getInstance();
+                            String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String contents = dateString + "," + timeString + "," + "success";
+                            DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             final MaterialDialog resultDialog = new MaterialDialog.Builder(getActivity())
                                     .title("Success!")
                                     .customView(R.layout.view_test_success, true)
@@ -110,6 +116,11 @@ public class TestingFragment extends Fragment {
                                     .show();
                         } else if (audioResult != 0 && sensorResult == 0) {
                             //Only Audio Failed
+                            Calendar calendar = Calendar.getInstance();
+                            String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String contents = dateString + "," + timeString + "," + "audio failed";
+                            DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             if (mAttempts < 1) {
                                 new MaterialDialog.Builder(getActivity())
                                         .title("Test Failed")
@@ -132,6 +143,11 @@ public class TestingFragment extends Fragment {
                             }
                         } else if (audioResult == 0 && sensorResult != 0) {
                             //Only Sensors Failed
+                            Calendar calendar = Calendar.getInstance();
+                            String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String contents = dateString + "," + timeString + "," + "sensors failed";
+                            DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             if (mAttempts < 1) {
                                 new MaterialDialog.Builder(getActivity())
                                         .title("Test Failed")
@@ -175,6 +191,11 @@ public class TestingFragment extends Fragment {
                             }
                         } else {
                             //Both Failed
+                            Calendar calendar = Calendar.getInstance();
+                            String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String contents = dateString + "," + timeString + "," + "Sensors and audio failed";
+                            DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             if (mAttempts < 1) {
                                 new MaterialDialog.Builder(getActivity())
                                         .title("Test Failed")

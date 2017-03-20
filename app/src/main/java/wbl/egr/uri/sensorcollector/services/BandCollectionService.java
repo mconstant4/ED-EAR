@@ -87,7 +87,7 @@ public class BandCollectionService extends Service {
      */
     public static final String ACTION_STOP_STREAMING = "uri.wbl.ear.action_stop_streaming";
     /**
-     * When an Intent is received with this action, BandCollectionService retrieves the conencted
+     * When an Intent is received with this action, BandCollectionService retrieves the connected
      * Band's name and address and broadcasts this information in a String array to all registered
      * BandUpdateReceivers.
      */
@@ -116,11 +116,11 @@ public class BandCollectionService extends Service {
         context.startService(intent);
     }
 
-    public static void stopStream(Context context) {
+    /*public static void stopStream(Context context) {
         Intent intent = new Intent(context, BandCollectionService.class);
         intent.setAction(ACTION_STOP_STREAMING);
         context.startService(intent);
-    }
+    }*/
 
     public static void requestBandInfo(Context context) {
         Intent intent = new Intent(context, BandCollectionService.class);
@@ -219,6 +219,7 @@ public class BandCollectionService extends Service {
         @Override
         public void onResult(Void aVoid, Throwable throwable) {
             log("Disconnected");
+            updateNotification("DISCONNECTED");
             stopSelf();
         }
     };
@@ -343,7 +344,7 @@ public class BandCollectionService extends Service {
         if (pairedBands == null || pairedBands.length == 0) {
             log("Connect Failed (No Bands are Paired with this Device)");
         } else if (pairedBands.length > 1) {
-            /**
+            /*
              * TODO
              * Implement UI to allow User to choose Band to pair to.
              * For now, always choose pairedBands[0]

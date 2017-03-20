@@ -129,8 +129,8 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                         }
                     }
 
-                    BandCollectionService.connect(getActivity());
                     new RequestHeartRateTask().execute(new WeakReference<Activity>(getActivity()));
+                    BandCollectionService.connect(getActivity());
                 } else {
                     BandCollectionService.disconnect(getActivity());
                 }

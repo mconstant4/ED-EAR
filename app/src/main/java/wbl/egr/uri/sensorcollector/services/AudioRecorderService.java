@@ -20,11 +20,12 @@ import wbl.egr.uri.sensorcollector.SettingsActivity;
 import wbl.egr.uri.sensorcollector.models.AudioRecordModel;
 
 /**
- * Created by mconstant on 2/23/17.
+ * Created by Matt Constant on 2/23/17.
+ *
  */
 
 public class AudioRecorderService extends Service {
-    private static final String HEADER = "Logging Date,Logging Time,Start Date,Start Time,End Date,End Time,File Name,File Size (bytes),Triggered?";
+    private static final String HEADER = "Start Date,Start Time,End Date,End Time,File Name,File Size (bytes),Triggered?";
 
     public static final String INTENT_TEMP_FILE = "intent_temp_file";
     public static final String INTENT_WAV_FILE = "intent_wav_file";
