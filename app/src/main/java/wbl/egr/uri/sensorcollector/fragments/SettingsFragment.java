@@ -123,13 +123,9 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         switch (key) {
             case KEY_SENSOR_ENABLE:
                 if (sharedPreferences.getBoolean(key, false)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            getActivity().requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 034);
-                        }
+                    if (!SettingsActivity.getBoolean(getActivity(), SettingsActivity.KEY_HR_CONSENT, false)) {
+                        new RequestHeartRateTask().execute(new WeakReference<Activity>(getActivity()));
                     }
-
-                    new RequestHeartRateTask().execute(new WeakReference<Activity>(getActivity()));
                     BandCollectionService.connect(getActivity());
                 } else {
                     BandCollectionService.disconnect(getActivity());
@@ -137,12 +133,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                 break;
             case KEY_AUDIO_ENABLE:
                 if (sharedPreferences.getBoolean(key, false)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (getActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                            getActivity().requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 037);
-                        }
-                    }
-
                     AudioRecordManager.start(getActivity(), AudioRecordManager.ACTION_AUDIO_START);
                 } else {
                     AudioRecordManager.start(getActivity(), AudioRecordManager.ACTION_AUDIO_CANCEL);
