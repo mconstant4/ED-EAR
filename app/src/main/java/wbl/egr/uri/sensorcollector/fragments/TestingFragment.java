@@ -43,8 +43,27 @@ public class TestingFragment extends Fragment {
     private TestBandReceiver mTestBandReceiver = new TestBandReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("TEST", "Sensor returned");
-            mSensorWorking = true;
+            Log.d("TEST", "Sensor returned (" + intent.getIntExtra(EXTRA_STATE, -1) + ")");
+            switch (intent.getIntExtra(TestBandReceiver.EXTRA_STATE, -1)) {
+                case BandCollectionService.STATE_CONNECTED:
+                    mSensorWorking = false;
+                    break;
+                case BandCollectionService.STATE_DISCONNECTED:
+                    mSensorWorking = false;
+                    break;
+                case BandCollectionService.STATE_NOT_WORN:
+                    mSensorWorking = true;
+                    break;
+                case BandCollectionService.STATE_STREAMING:
+                    mSensorWorking = true;
+                    break;
+                case BandCollectionService.STATE_OTHER:
+                    mSensorWorking = false;
+                    break;
+                default:
+                    mSensorWorking = false;
+                    break;
+            }
         }
     };
 
@@ -55,6 +74,7 @@ public class TestingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mSensorWorking = false;
         getActivity().registerReceiver(mTestBandReceiver, TestBandReceiver.INTENT_FILTER);
     }
 
@@ -67,6 +87,7 @@ public class TestingFragment extends Fragment {
         mTestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                BandCollectionService.test(getActivity());
                 test();
             }
         });
@@ -82,9 +103,6 @@ public class TestingFragment extends Fragment {
     }
 
     private void test() {
-        if (!isBandCollectionServiceRunning()) {
-            BandCollectionService.test(getActivity());
-        }
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -315,7 +333,7 @@ public class TestingFragment extends Fragment {
     }
 
     private int checkSensors() {
-        if (mSensorWorking || isBandCollectionServiceRunning()) {
+        if (mSensorWorking) {
             return 0;
         } else {
             return 1;
@@ -340,13 +358,5 @@ public class TestingFragment extends Fragment {
                 .show();
     }
 
-    private boolean isBandCollectionServiceRunning() {
-        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (BandCollectionService.class.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }

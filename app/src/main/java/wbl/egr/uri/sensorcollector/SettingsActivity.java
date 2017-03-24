@@ -70,7 +70,7 @@ public class SettingsActivity extends AppCompatActivity implements SettingsInter
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 034);
         }
-        if (SettingsActivity.getBoolean(this, SettingsActivity.KEY_HR_CONSENT, false)) {
+        if (!SettingsActivity.getBoolean(this, SettingsActivity.KEY_HR_CONSENT, false)) {
             new RequestHeartRateTask().execute(new WeakReference<Activity>(this));
         }
     }

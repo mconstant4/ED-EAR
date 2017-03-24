@@ -8,6 +8,6 @@ import android.content.IntentFilter;
  */
 
 public abstract class TestBandReceiver extends BroadcastReceiver {
-    public static final String EXTRA_CHECK = "uri.wbl.ear.extra_check";
+    public static final String EXTRA_STATE = "uri.wbl.ear.extra_state";
     public static final IntentFilter INTENT_FILTER = new IntentFilter("uri.wbl.ear.test_band_receiver");
 }
