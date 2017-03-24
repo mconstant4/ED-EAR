@@ -387,6 +387,7 @@ public class BandCollectionService extends Service {
         }
 
         if (mState != STATE_STREAMING) {
+            log(mBandClient.getSensorManager().getCurrentHeartRateConsent().name());
             BandSensorManager bandSensorManager = mBandClient.getSensorManager();
             try {
                 bandSensorManager.registerAccelerometerEventListener(mBandAccelerometerListener, SampleRate.MS128);
