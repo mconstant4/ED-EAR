@@ -246,6 +246,7 @@ public class BandCollectionService extends Service {
                 case BOUND:
                     log("Bound");
                     mState = STATE_DISCONNECTED;
+                    updateNotification("DISCONNECTED");
                     break;
                 case CONNECTED:
                     log("Connected");
@@ -270,6 +271,7 @@ public class BandCollectionService extends Service {
                 case UNBOUND:
                     log("Unbound");
                     mState = STATE_DISCONNECTED;
+                    updateNotification("DISCONNECTED");
                     break;
                 case INVALID_SDK_VERSION:
                     log("Invalid SDK Version");
@@ -439,6 +441,7 @@ public class BandCollectionService extends Service {
         mBandName = bandInfo.getName();
         mBandAddress = bandInfo.getMacAddress();
         mBandClient = mBandClientManager.create(this, bandInfo);
+        mBandClient.registerConnectionCallback(mBandConnectionCallback);
         mBandClient.connect().registerResultCallback(mBandConnectResultCallback);
     }
 

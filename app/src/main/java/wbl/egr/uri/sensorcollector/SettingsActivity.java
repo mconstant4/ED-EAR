@@ -2,29 +2,22 @@ package wbl.egr.uri.sensorcollector;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.FrameLayout;
-
 import java.lang.ref.WeakReference;
 
 import wbl.egr.uri.sensorcollector.fragments.SettingsFragment;
-import wbl.egr.uri.sensorcollector.interfaces.SettingsInterface;
 import wbl.egr.uri.sensorcollector.tasks.RequestHeartRateTask;
 
 /**
  * Created by mconstant on 2/23/17.
  */
 
-public class SettingsActivity extends AppCompatActivity implements SettingsInterface {
+public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_SENSOR_ENABLE = "pref_enable_sensors";
     public static final String KEY_AUDIO_ENABLE = "pref_enable_audio";
     public static final String KEY_HR_CONSENT = "pref_hr_consent";
@@ -56,16 +49,10 @@ public class SettingsActivity extends AppCompatActivity implements SettingsInter
         return sharedPreferences.getBoolean(key, defaultValue);
     }
 
-    private FrameLayout mFragmentContainer;
-    private CoordinatorLayout mMessageContainer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_fragment);
-
-        mFragmentContainer = (FrameLayout) findViewById(R.id.fragment_container);
-        mMessageContainer = (CoordinatorLayout) findViewById(R.id.message_container);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 034);
@@ -97,19 +84,5 @@ public class SettingsActivity extends AppCompatActivity implements SettingsInter
     @Override
     public void onBackPressed() {
         finish();
-    }
-
-    @Override
-    public void message(String message) {
-        Snackbar.make(mMessageContainer, message, Snackbar.LENGTH_INDEFINITE).show();
-    }
-
-    @Override
-    public void refresh() {
-        Fragment fragment = getFragmentManager().findFragmentByTag("settings_fragment");
-        getFragmentManager().beginTransaction()
-                .detach(fragment)
-                .attach(fragment)
-                .commit();
     }
 }

@@ -1,12 +1,9 @@
 package wbl.egr.uri.sensorcollector.fragments;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -18,7 +15,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import wbl.egr.uri.sensorcollector.R;
 import wbl.egr.uri.sensorcollector.SettingsActivity;
@@ -35,7 +31,7 @@ import static wbl.egr.uri.sensorcollector.SettingsActivity.KEY_IDENTIFIER;
 import static wbl.egr.uri.sensorcollector.SettingsActivity.KEY_SENSOR_ENABLE;
 
 /**
- * Created by mconstant on 2/23/17. 
+ * Created by Matt Constant on 2/23/17.
  */
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {

@@ -94,7 +94,6 @@ public class AudioRecordManager extends IntentService {
         } else {
             ((AlarmManager) getSystemService(ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), getPendingIntent(AlarmReceiver.AUDIO_ID, ACTION_AUDIO_START));
         }
-        Log.d(this.getClass().getSimpleName(), "Alarm set for " + calendar.getTime());
     }
 
     private void cancelAlarm() {
@@ -113,18 +112,6 @@ public class AudioRecordManager extends IntentService {
     }
 
     private void startAudio(boolean trigger) {
-        log("Start Audio");
-        /*BlackoutSettingsDbHelper dbHelper = new BlackoutSettingsDbHelper(this);
-        ArrayList<BlackoutSettingModel> blackoutSettingModels = dbHelper.getAllSettings();
-        if (blackoutSettingModels != null && blackoutSettingModels.size() > 0) {
-            for (BlackoutSettingModel blackoutSettingModel : blackoutSettingModels) {
-                if (blackoutSettingModel.inBlackoutTime()) {
-                    log("In Blackout Time");
-                    return;
-                }
-            }
-        }*/
-
         //Get time
         Calendar currentTime = Calendar.getInstance();
         //Check if between 1am and 5am
@@ -164,7 +151,7 @@ public class AudioRecordManager extends IntentService {
             wavFileName += p_id + "_";
         }
         wavFileName += (new SimpleDateFormat("MM_dd_yyyy", Locale.US).format(new Date()) + "_");
-        wavFileName += (new SimpleDateFormat("hh.mm.ss", Locale.US).format(new Date()) + "_");
+        wavFileName += (new SimpleDateFormat("kk.mm.ss", Locale.US).format(new Date()) + "_");
         int count = 0;
         if (directory != null) {
             for (File file : directory.listFiles()) {

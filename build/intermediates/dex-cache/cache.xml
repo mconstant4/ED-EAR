@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="c82741bc129dd5f99f11a4ab8666ae24262053b6">
+        <dex dex="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run_5edfbb601f8599817a1c14fcea6126928e2230ef/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/mconstant/.android/build-cache/01935d068e9a78d23c1333b8e4953cacae984892/output/jars/classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="a3e61044038fb54cddf6b8dc79f41d2b57f42caf">
+        <dex dex="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/transforms/dex/debug/folders/1000/10/classes_7f85c3cb6edb27faaa3d5f7cebd37c2f040364de/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="c86e2a2c1c508b4786e1b323ca8e3868a18b52a0">
+        <dex dex="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run-bootstrap_e0ea0bde14f79e5a5420c73b01654a200b5c2f86/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/mconstant/.android/build-cache/e6ac5c565106bd2e6d8041f218ec7c18e754cce0/output/jars/classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="fbb206f7a119f66ce171d95aae1225a5b209a8b7">
+        <dex dex="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/transforms/dex/debug/folders/1000/10/classes_be8df8ed6e4c22ffc962938f9c2373f731d76847/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/mconstant/.android/build-cache/844b1bd7165c1dea8fcd3464aa4b2fa1cf6acfe5/output/jars/classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="9ab787a20aae245b5b3651ae0b9c38459eb37715">
+        <dex dex="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/transforms/dex/debug/folders/1000/10/classes_4a142a096ff335f000dee296b5474550624e62e7/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/mconstant/Documents/WBL/an_ear/app/libs/microsoft-band-1.3.20307.2.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="f14888994429a404549c37653bc6e4c6a8c39a8e">
+        <dex dex="/home/mconstant/Documents/WBL/an_ear/app/build/intermediates/transforms/dex/debug/folders/1000/2/microsoft-band-1.3.20307.2_2f205ef4b8500255f4d8d657b2ddb26f17ac20d9/classes.dex" />
+    </item>
+
+</items>
