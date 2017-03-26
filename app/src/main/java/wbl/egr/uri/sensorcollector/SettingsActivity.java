@@ -1,8 +1,12 @@
 package wbl.egr.uri.sensorcollector;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.CoordinatorLayout;
@@ -10,8 +14,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.FrameLayout;
 
+import java.lang.ref.WeakReference;
+
 import wbl.egr.uri.sensorcollector.fragments.SettingsFragment;
 import wbl.egr.uri.sensorcollector.interfaces.SettingsInterface;
+import wbl.egr.uri.sensorcollector.tasks.RequestHeartRateTask;
 
 /**
  * Created by mconstant on 2/23/17.
@@ -59,6 +66,13 @@ public class SettingsActivity extends AppCompatActivity implements SettingsInter
 
         mFragmentContainer = (FrameLayout) findViewById(R.id.fragment_container);
         mMessageContainer = (CoordinatorLayout) findViewById(R.id.message_container);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 034);
+        }
+        if (!SettingsActivity.getBoolean(this, SettingsActivity.KEY_HR_CONSENT, false)) {
+            new RequestHeartRateTask().execute(new WeakReference<Activity>(this));
+        }
     }
 
     @Override

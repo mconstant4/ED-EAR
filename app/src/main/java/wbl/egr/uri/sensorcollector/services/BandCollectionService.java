@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
+import com.microsoft.band.BandConnectionCallback;
 import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 import com.microsoft.band.BandInfo;
@@ -98,15 +99,25 @@ public class BandCollectionService extends Service {
      */
     public static final String ACTION_TEST_SERVICE = "uri.wbl.ear.action_test_service";
 
+    public static final String EXTRA_AUTO_STREAM = "uri.egr.wbl.extra_auto_stream";
+
     //States
-    private static final int STATE_CONNECTED = 0;
-    private static final int STATE_STREAMING = 1;
-    private static final int STATE_DISCONNECTED = 2;
-    private static final int STATE_OTHER = 3;
+    public static final int STATE_CONNECTED = 0;
+    public static final int STATE_STREAMING = 1;
+    public static final int STATE_DISCONNECTED = 2;
+    public static final int STATE_NOT_WORN = 3;
+    public static final int STATE_OTHER = 4;
 
     public static void connect(Context context) {
         Intent intent = new Intent(context, BandCollectionService.class);
         intent.setAction(ACTION_CONNECT);
+        context.startService(intent);
+    }
+
+    public static void connect(Context context, boolean autoStream) {
+        Intent intent = new Intent(context, BandCollectionService.class);
+        intent.setAction(ACTION_CONNECT);
+        intent.putExtra(EXTRA_AUTO_STREAM, true);
         context.startService(intent);
     }
 
@@ -155,6 +166,7 @@ public class BandCollectionService extends Service {
     private Context mContext;
     private String mBandName;
     private String mBandAddress;
+    private boolean mAutoStream;
 
     private int mState;
 
@@ -182,6 +194,13 @@ public class BandCollectionService extends Service {
                     } catch (BandException e) {
                         e.printStackTrace();
                     }
+
+                    if (mAutoStream) {
+                        startStreaming();
+                    }
+
+                    mState = STATE_CONNECTED;
+
                     //Broadcast Update
                     log("Broadcasting Update");
                     Intent intent = new Intent(BandUpdateReceiver.INTENT_FILTER.getAction(0));
@@ -200,16 +219,65 @@ public class BandCollectionService extends Service {
                     break;
                 case UNBOUND:
                     log("Unbound");
-                    mState = STATE_OTHER;
+                    mState = STATE_DISCONNECTED;
                     updateNotification("UNBOUND");
                     Toast.makeText(mContext, "Could not connect to Band", Toast.LENGTH_LONG).show();
                     break;
                 case UNBINDING:
                     log("Unbinding");
+                    mState = STATE_OTHER;
                     break;
                 default:
+                    mState = STATE_OTHER;
                     log("Unknown State");
                     updateNotification("ERROR");
+                    break;
+            }
+        }
+    };
+
+    private BandConnectionCallback mBandConnectionCallback = new BandConnectionCallback() {
+        @Override
+        public void onStateChanged(ConnectionState connectionState) {
+            switch (connectionState) {
+                case BINDING:
+                    log("Binding");
+                    break;
+                case BOUND:
+                    log("Bound");
+                    mState = STATE_DISCONNECTED;
+                    break;
+                case CONNECTED:
+                    log("Connected");
+                    mState = STATE_CONNECTED;
+                    updateNotification("CONNECTED");
+
+                    if (mAutoStream) {
+                        startStreaming();
+                    }
+
+                    mState = STATE_CONNECTED;
+
+                    //Broadcast Update
+                    log("Broadcasting Update");
+                    Intent intent = new Intent(BandUpdateReceiver.INTENT_FILTER.getAction(0));
+                    intent.putExtra(BandUpdateReceiver.UPDATE_BAND_CONNECTED, true);
+                    sendBroadcast(intent);
+                    break;
+                case UNBINDING:
+                    log("Unbinding");
+                    break;
+                case UNBOUND:
+                    log("Unbound");
+                    mState = STATE_DISCONNECTED;
+                    break;
+                case INVALID_SDK_VERSION:
+                    log("Invalid SDK Version");
+                    mState = STATE_OTHER;
+                    break;
+                case DISPOSED:
+                    log("Disposed");
+                    mState = STATE_OTHER;
                     break;
             }
         }
@@ -219,6 +287,7 @@ public class BandCollectionService extends Service {
         @Override
         public void onResult(Void aVoid, Throwable throwable) {
             log("Disconnected");
+            mState = STATE_DISCONNECTED;
             updateNotification("DISCONNECTED");
             stopSelf();
         }
@@ -238,6 +307,7 @@ public class BandCollectionService extends Service {
         mState = STATE_OTHER;
         mBandName = null;
         mBandAddress = null;
+        mAutoStream = false;
 
         //Declare as Foreground Service
         Notification notification = new Notification.Builder(this)
@@ -280,14 +350,20 @@ public class BandCollectionService extends Service {
                 return START_NOT_STICKY;
             }
 
+            log("Handling Intent");
+
             switch (intent.getAction()) {
                 case ACTION_CONNECT:
+                    if (intent.hasExtra(EXTRA_AUTO_STREAM)) {
+                        mAutoStream = true;
+                    }
                     connect();
                     break;
                 case ACTION_DISCONNECT:
                     disconnect();
                     break;
                 case ACTION_START_STREAMING:
+                    log("Stream Intent");
                     startStreaming();
                     break;
                 case ACTION_STOP_STREAMING:
@@ -298,9 +374,9 @@ public class BandCollectionService extends Service {
                     break;
                 case ACTION_TEST_SERVICE:
                     Intent testIntent = new Intent(TestBandReceiver.INTENT_FILTER.getAction(0));
-                    testIntent.putExtra(TestBandReceiver.EXTRA_CHECK, true);
+                    testIntent.putExtra(TestBandReceiver.EXTRA_STATE, mState);
                     sendBroadcast(testIntent);
-                    final Context context = this;
+                    /*final Context context = this;
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -316,7 +392,10 @@ public class BandCollectionService extends Service {
                                 e.printStackTrace();
                             }
                         }
-                    }).start();
+                    }).start();*/
+                    if (mState == STATE_OTHER) {
+                        stopSelf();
+                    }
                 default:
                     break;
             }
@@ -390,6 +469,7 @@ public class BandCollectionService extends Service {
             log(mBandClient.getSensorManager().getCurrentHeartRateConsent().name());
             BandSensorManager bandSensorManager = mBandClient.getSensorManager();
             try {
+                log(bandSensorManager.getCurrentHeartRateConsent().name());
                 bandSensorManager.registerAccelerometerEventListener(mBandAccelerometerListener, SampleRate.MS128);
                 bandSensorManager.registerAmbientLightEventListener(mBandAmbientLightListener);
                 bandSensorManager.registerContactEventListener(mBandContactListener);
@@ -440,6 +520,7 @@ public class BandCollectionService extends Service {
             bandSensorManager.unregisterHeartRateEventListener(mBandHeartRateListener);
             bandSensorManager.unregisterRRIntervalEventListener(mBandRRIntervalListener);
             bandSensorManager.unregisterSkinTemperatureEventListener(mBandSkinTemperatureListener);
+            mState = STATE_NOT_WORN;
         } catch (BandIOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
@@ -457,6 +538,7 @@ public class BandCollectionService extends Service {
             bandSensorManager.registerHeartRateEventListener(mBandHeartRateListener);
             bandSensorManager.registerRRIntervalEventListener(mBandRRIntervalListener);
             bandSensorManager.registerSkinTemperatureEventListener(mBandSkinTemperatureListener);
+            mState = STATE_STREAMING;
         } catch (BandException | InvalidBandVersionException e) {
             e.printStackTrace();
         }

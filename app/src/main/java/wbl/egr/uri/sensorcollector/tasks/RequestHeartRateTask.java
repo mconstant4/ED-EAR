@@ -3,6 +3,7 @@ package wbl.egr.uri.sensorcollector.tasks;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
@@ -26,6 +27,9 @@ public class RequestHeartRateTask extends AsyncTask<WeakReference<Activity>, Voi
         public void userAccepted(boolean b) {
             if (mContext != null && mContext.get() != null) {
                 SettingsActivity.putBoolean(mContext.get(), SettingsActivity.KEY_HR_CONSENT, b);
+                Log.d("CONSENT", String.valueOf(b));
+            } else {
+                Log.d("CONSENT", "Could not store HR Consent Value");
             }
         }
     };
@@ -35,6 +39,8 @@ public class RequestHeartRateTask extends AsyncTask<WeakReference<Activity>, Voi
         WeakReference<Activity> activityWeakReference = weakReferences[0];
         if (activityWeakReference == null || activityWeakReference.get() == null) {
             return null;
+        } else {
+            Log.d("CONSENT", "Invalid Context!");
         }
 
         mContext = new WeakReference<Context>(activityWeakReference.get());
@@ -50,6 +56,8 @@ public class RequestHeartRateTask extends AsyncTask<WeakReference<Activity>, Voi
                     bandClient.connect().await();
                     bandClient.getSensorManager().requestHeartRateConsent(activityWeakReference.get(), mHeartRateConsentListener);
                     bandClient.disconnect().await();
+                } else {
+                    Log.d("CONSENT", "Caller Instance no longer exists");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
