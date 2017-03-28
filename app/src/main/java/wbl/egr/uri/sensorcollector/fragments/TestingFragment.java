@@ -114,6 +114,8 @@ public class TestingFragment extends Fragment {
 
                         if (audioResult == 0 && sensorResult == 0) {
                             //Test Passed
+                            mAttempts = 0;
+
                             Calendar calendar = Calendar.getInstance();
                             String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
                             String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
@@ -139,7 +141,7 @@ public class TestingFragment extends Fragment {
                             String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "audio failed";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
-                            if (mAttempts < 1) {
+                            if (mAttempts < 4) {
                                 new MaterialDialog.Builder(getActivity())
                                         .title("Test Failed")
                                         .customView(R.layout.view_test_audio_fail, true)
@@ -166,7 +168,7 @@ public class TestingFragment extends Fragment {
                             String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "sensors failed";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
-                            if (mAttempts < 1) {
+                            if (mAttempts < 4) {
                                 new MaterialDialog.Builder(getActivity())
                                         .title("Test Failed")
                                         .customView(R.layout.view_test_sensors_fail, true)
@@ -191,7 +193,7 @@ public class TestingFragment extends Fragment {
                                                                     public void run() {
                                                                         SettingsActivity.putBoolean(getActivity(), SettingsActivity.KEY_SENSOR_ENABLE, true);
                                                                         SettingsActivity.putBoolean(getActivity(), SettingsActivity.KEY_AUDIO_ENABLE, true);
-                                                                        test();
+                                                                        //test();
                                                                     }
                                                                 });
                                                             } catch (InterruptedException e) {
@@ -214,7 +216,7 @@ public class TestingFragment extends Fragment {
                             String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "Sensors and audio failed";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
-                            if (mAttempts < 1) {
+                            if (mAttempts < 4) {
                                 new MaterialDialog.Builder(getActivity())
                                         .title("Test Failed")
                                         .customView(R.layout.view_test_fail, true)
@@ -239,7 +241,7 @@ public class TestingFragment extends Fragment {
                                                                     public void run() {
                                                                         SettingsActivity.putBoolean(getActivity(), SettingsActivity.KEY_SENSOR_ENABLE, true);
                                                                         SettingsActivity.putBoolean(getActivity(), SettingsActivity.KEY_AUDIO_ENABLE, true);
-                                                                        test();
+                                                                        //test();
                                                                     }
                                                                 });
                                                             } catch (InterruptedException e) {
