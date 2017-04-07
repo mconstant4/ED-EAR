@@ -57,6 +57,9 @@ public class TestingFragment extends Fragment {
                 case BandCollectionService.STATE_STREAMING:
                     mSensorWorking = true;
                     break;
+                case BandCollectionService.STATE_PAUSED:
+                    mSensorWorking = true;
+                    break;
                 case BandCollectionService.STATE_OTHER:
                     mSensorWorking = false;
                     break;
@@ -118,7 +121,7 @@ public class TestingFragment extends Fragment {
 
                             Calendar calendar = Calendar.getInstance();
                             String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
-                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "success";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             final MaterialDialog resultDialog = new MaterialDialog.Builder(getActivity())
@@ -138,7 +141,7 @@ public class TestingFragment extends Fragment {
                             //Only Audio Failed
                             Calendar calendar = Calendar.getInstance();
                             String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
-                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "audio failed";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             if (mAttempts < 4) {
@@ -165,7 +168,7 @@ public class TestingFragment extends Fragment {
                             //Only Sensors Failed
                             Calendar calendar = Calendar.getInstance();
                             String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
-                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "sensors failed";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             if (mAttempts < 4) {
@@ -213,7 +216,7 @@ public class TestingFragment extends Fragment {
                             //Both Failed
                             Calendar calendar = Calendar.getInstance();
                             String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
-                            String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+                            String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(calendar.getTime());
                             String contents = dateString + "," + timeString + "," + "Sensors and audio failed";
                             DataLogService.log(getActivity(), new File(MainActivity.getRootFile(getActivity()), "test_log.csv"), contents, "Date,Time,Result");
                             if (mAttempts < 4) {

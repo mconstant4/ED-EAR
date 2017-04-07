@@ -31,7 +31,7 @@ public class BandAmbientLightListener implements BandAmbientLightEventListener {
     public void onBandAmbientLightChanged(BandAmbientLightEvent bandAmbientLightEvent) {
         Date date = Calendar.getInstance().getTime();
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(date);
-        String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(date);
+        String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(date);
         String data = dateString + "," + timeString + "," +
                 bandAmbientLightEvent.getBrightness();
         DataLogService.log(mContext, new File(MainActivity.getRootFile(mContext), "light.csv"), data, HEADER);

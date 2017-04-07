@@ -5,7 +5,9 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
@@ -106,7 +108,8 @@ public class BandCollectionService extends Service {
     public static final int STATE_STREAMING = 1;
     public static final int STATE_DISCONNECTED = 2;
     public static final int STATE_NOT_WORN = 3;
-    public static final int STATE_OTHER = 4;
+    public static final int STATE_PAUSED = 4;
+    public static final int STATE_OTHER = 5;
 
     public static void connect(Context context) {
         Intent intent = new Intent(context, BandCollectionService.class);
@@ -117,7 +120,7 @@ public class BandCollectionService extends Service {
     public static void connect(Context context, boolean autoStream) {
         Intent intent = new Intent(context, BandCollectionService.class);
         intent.setAction(ACTION_CONNECT);
-        intent.putExtra(EXTRA_AUTO_STREAM, true);
+        intent.putExtra(EXTRA_AUTO_STREAM, autoStream);
         context.startService(intent);
     }
 
@@ -167,16 +170,67 @@ public class BandCollectionService extends Service {
     private String mBandName;
     private String mBandAddress;
     private boolean mAutoStream;
+    private PowerManager.WakeLock mWakeLock;
 
     private int mState;
 
-    BandContactStateReceiver mBandContactStateReceiver = new BandContactStateReceiver() {
+    private BandContactStateReceiver mBandContactStateReceiver = new BandContactStateReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getBooleanExtra(BAND_STATE, false)) {
                 resumeFromDynamicBlackout();
             } else {
                 enterDynamicBlackout();
+            }
+        }
+    };
+
+    private Handler mHandler = new Handler();
+    private Runnable mDelayedToggle = new Runnable() {
+        @Override
+        public void run() {
+            if (mState == STATE_STREAMING || mState == STATE_NOT_WORN) {
+                BandSensorManager bandSensorManager = mBandClient.getSensorManager();
+                try {
+                    bandSensorManager.unregisterAccelerometerEventListener(mBandAccelerometerListener);
+                    bandSensorManager.unregisterAmbientLightEventListener(mBandAmbientLightListener);
+                    bandSensorManager.unregisterContactEventListener(mBandContactListener);
+                    bandSensorManager.unregisterGsrEventListener(mBandGsrListener);
+                    bandSensorManager.unregisterHeartRateEventListener(mBandHeartRateListener);
+                    bandSensorManager.unregisterRRIntervalEventListener(mBandRRIntervalListener);
+                    bandSensorManager.unregisterSkinTemperatureEventListener(mBandSkinTemperatureListener);
+                    updateNotification("CONNECTED", android.R.drawable.presence_away);
+                } catch (BandIOException | IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+                mState = STATE_PAUSED;
+                log("Stream Paused");
+            } else if (mState == STATE_PAUSED || mState == STATE_CONNECTED) {
+                BandSensorManager bandSensorManager = mBandClient.getSensorManager();
+                try {
+                    log(bandSensorManager.getCurrentHeartRateConsent().name());
+                    bandSensorManager.registerAccelerometerEventListener(mBandAccelerometerListener, SampleRate.MS128);
+                    bandSensorManager.registerAmbientLightEventListener(mBandAmbientLightListener);
+                    bandSensorManager.registerContactEventListener(mBandContactListener);
+                    bandSensorManager.registerGsrEventListener(mBandGsrListener, GsrSampleRate.MS200);
+                    bandSensorManager.registerHeartRateEventListener(mBandHeartRateListener);
+                    bandSensorManager.registerRRIntervalEventListener(mBandRRIntervalListener);
+                    bandSensorManager.registerSkinTemperatureEventListener(mBandSkinTemperatureListener);
+                    updateNotification("STREAMING", android.R.drawable.presence_online);
+                } catch (BandException | InvalidBandVersionException e) {
+                    e.printStackTrace();
+                }
+                mState = STATE_STREAMING;
+                log("Stream Resumed");
+            } else {
+                log("Band not Connected");
+                //Band is off/out of range/disconnected
+            }
+
+            //Allow for recording mode to be toggled while this Service is running
+            if (    (mState != STATE_STREAMING || mState != STATE_NOT_WORN) ||
+                    SettingsActivity.getBoolean(mContext, SettingsActivity.KEY_SENSOR_PERIODIC, false)) {
+                mHandler.postDelayed(this, 3 * 60 * 1000);
             }
         }
     };
@@ -188,7 +242,7 @@ public class BandCollectionService extends Service {
                 case CONNECTED:
                     log("Connected");
                     mState = STATE_CONNECTED;
-                    updateNotification("CONNECTED");
+                    updateNotification("CONNECTED", android.R.drawable.presence_away);
                     try {
                         mBandClient.getNotificationManager().vibrate(VibrationType.RAMP_UP);
                     } catch (BandException e) {
@@ -198,6 +252,8 @@ public class BandCollectionService extends Service {
                     if (mAutoStream) {
                         startStreaming();
                     }
+
+                    mBandClient.registerConnectionCallback(mBandConnectionCallback);
 
                     mState = STATE_CONNECTED;
 
@@ -210,7 +266,7 @@ public class BandCollectionService extends Service {
                 case BOUND:
                     log("Bound");
                     mState = STATE_DISCONNECTED;
-                    updateNotification("DISCONNECTED");
+                    updateNotification("DISCONNECTED", android.R.drawable.presence_offline);
                     Toast.makeText(mContext, "Could not connect to Band", Toast.LENGTH_LONG).show();
                     disconnect();
                     break;
@@ -220,7 +276,7 @@ public class BandCollectionService extends Service {
                 case UNBOUND:
                     log("Unbound");
                     mState = STATE_DISCONNECTED;
-                    updateNotification("UNBOUND");
+                    updateNotification("UNBOUND", android.R.drawable.presence_busy);
                     Toast.makeText(mContext, "Could not connect to Band", Toast.LENGTH_LONG).show();
                     break;
                 case UNBINDING:
@@ -230,7 +286,7 @@ public class BandCollectionService extends Service {
                 default:
                     mState = STATE_OTHER;
                     log("Unknown State");
-                    updateNotification("ERROR");
+                    updateNotification("ERROR", android.R.drawable.presence_busy);
                     break;
             }
         }
@@ -246,15 +302,21 @@ public class BandCollectionService extends Service {
                 case BOUND:
                     log("Bound");
                     mState = STATE_DISCONNECTED;
-                    updateNotification("DISCONNECTED");
+                    updateNotification("DISCONNECTED", android.R.drawable.presence_offline);
                     break;
                 case CONNECTED:
                     log("Connected");
                     mState = STATE_CONNECTED;
-                    updateNotification("CONNECTED");
+                    updateNotification("CONNECTED", android.R.drawable.presence_away);
 
-                    if (mAutoStream) {
+                    if (mAutoStream || mState != STATE_PAUSED) {
                         startStreaming();
+                    }
+
+                    try {
+                        mBandClient.getNotificationManager().vibrate(VibrationType.TWO_TONE_HIGH);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
                     }
 
                     mState = STATE_CONNECTED;
@@ -271,7 +333,7 @@ public class BandCollectionService extends Service {
                 case UNBOUND:
                     log("Unbound");
                     mState = STATE_DISCONNECTED;
-                    updateNotification("DISCONNECTED");
+                    updateNotification("DISCONNECTED", android.R.drawable.presence_offline);
                     break;
                 case INVALID_SDK_VERSION:
                     log("Invalid SDK Version");
@@ -290,7 +352,7 @@ public class BandCollectionService extends Service {
         public void onResult(Void aVoid, Throwable throwable) {
             log("Disconnected");
             mState = STATE_DISCONNECTED;
-            updateNotification("DISCONNECTED");
+            updateNotification("DISCONNECTED", android.R.drawable.presence_offline);
             stopSelf();
         }
     };
@@ -311,10 +373,16 @@ public class BandCollectionService extends Service {
         mBandAddress = null;
         mAutoStream = false;
 
+        mWakeLock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BandWakeLock");
+        mWakeLock.acquire();
+        if (mWakeLock.isHeld()) {
+            log("Wake Lock Acquired");
+        }
+
         //Declare as Foreground Service
         Notification notification = new Notification.Builder(this)
                 .setContentTitle("ED EAR Active")
-                .setSmallIcon(android.R.drawable.ic_secure)
+                .setSmallIcon(android.R.drawable.presence_invisible)
                 .setContentText("EAR is Starting")
                 .build();
         startForeground(NOTIFICATION_ID, notification);
@@ -378,23 +446,6 @@ public class BandCollectionService extends Service {
                     Intent testIntent = new Intent(TestBandReceiver.INTENT_FILTER.getAction(0));
                     testIntent.putExtra(TestBandReceiver.EXTRA_STATE, mState);
                     sendBroadcast(testIntent);
-                    /*final Context context = this;
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                stopStreaming();
-                                Thread.sleep(250);
-                                disconnect(context);
-                                Thread.sleep(250);
-                                connect(context);
-                                Thread.sleep(250);
-                                startStream(context);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();*/
                     if (mState == STATE_OTHER) {
                         stopSelf();
                     }
@@ -408,9 +459,11 @@ public class BandCollectionService extends Service {
 
     @Override
     public void onDestroy() {
+        mWakeLock.release();
         unregisterReceiver(mBandContactStateReceiver);
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator.vibrate(500);
+        mHandler.removeCallbacks(mDelayedToggle);
         log("Service Destroyed");
         super.onDestroy();
     }
@@ -441,7 +494,6 @@ public class BandCollectionService extends Service {
         mBandName = bandInfo.getName();
         mBandAddress = bandInfo.getMacAddress();
         mBandClient = mBandClientManager.create(this, bandInfo);
-        mBandClient.registerConnectionCallback(mBandConnectionCallback);
         mBandClient.connect().registerResultCallback(mBandConnectResultCallback);
     }
 
@@ -473,6 +525,11 @@ public class BandCollectionService extends Service {
             BandSensorManager bandSensorManager = mBandClient.getSensorManager();
             try {
                 log(bandSensorManager.getCurrentHeartRateConsent().name());
+                mState = STATE_STREAMING;
+                updateNotification("STREAMING", android.R.drawable.presence_online);
+                if (SettingsActivity.getBoolean(mContext, SettingsActivity.KEY_SENSOR_PERIODIC, false)) {
+                    mHandler.postDelayed(mDelayedToggle, 3 * 60 * 1000);
+                }
                 bandSensorManager.registerAccelerometerEventListener(mBandAccelerometerListener, SampleRate.MS128);
                 bandSensorManager.registerAmbientLightEventListener(mBandAmbientLightListener);
                 bandSensorManager.registerContactEventListener(mBandContactListener);
@@ -480,8 +537,6 @@ public class BandCollectionService extends Service {
                 bandSensorManager.registerHeartRateEventListener(mBandHeartRateListener);
                 bandSensorManager.registerRRIntervalEventListener(mBandRRIntervalListener);
                 bandSensorManager.registerSkinTemperatureEventListener(mBandSkinTemperatureListener);
-                mState = STATE_STREAMING;
-                updateNotification("STREAMING");
             } catch (BandException | InvalidBandVersionException e) {
                 e.printStackTrace();
             }
@@ -493,7 +548,7 @@ public class BandCollectionService extends Service {
             return;
         }
 
-        if (mState == STATE_STREAMING) {
+        if (mState == STATE_STREAMING || mState == STATE_NOT_WORN) {
             BandSensorManager bandSensorManager = mBandClient.getSensorManager();
             try {
                 bandSensorManager.unregisterAccelerometerEventListener(mBandAccelerometerListener);
@@ -504,7 +559,7 @@ public class BandCollectionService extends Service {
                 bandSensorManager.unregisterRRIntervalEventListener(mBandRRIntervalListener);
                 bandSensorManager.unregisterSkinTemperatureEventListener(mBandSkinTemperatureListener);
                 mState = STATE_CONNECTED;
-                updateNotification("CONNECTED");
+                updateNotification("CONNECTED", android.R.drawable.presence_away);
             } catch (BandIOException | IllegalArgumentException e) {
                 e.printStackTrace();
             }
@@ -513,7 +568,7 @@ public class BandCollectionService extends Service {
 
     private void enterDynamicBlackout() {
         if (mBandClient.isConnected()) {
-            updateNotification("Band is not being worn");
+            updateNotification("Band is not being worn", android.R.drawable.presence_away);
         }
         BandSensorManager bandSensorManager = mBandClient.getSensorManager();
         try {
@@ -531,7 +586,7 @@ public class BandCollectionService extends Service {
 
     private void resumeFromDynamicBlackout() {
         if (mBandClient.isConnected()) {
-            updateNotification("STREAMING");
+            updateNotification("STREAMING", android.R.drawable.presence_online);
         }
         BandSensorManager bandSensorManager = mBandClient.getSensorManager();
         try {
@@ -573,12 +628,12 @@ public class BandCollectionService extends Service {
         mBandClient.disconnect().registerResultCallback(mBandDisconnectResultCallback, 10, TimeUnit.SECONDS);
     }
 
-    private void updateNotification(String status) {
+    private void updateNotification(String status, int icon) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Notification.Builder notificationBuilder = new Notification.Builder(this)
                 .setContentTitle("EAR is Active")
                 .setContentText("Band Status: " + status)
-                .setSmallIcon(android.R.drawable.ic_secure);
+                .setSmallIcon(icon);
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 

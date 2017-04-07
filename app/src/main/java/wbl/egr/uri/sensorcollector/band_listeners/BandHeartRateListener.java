@@ -34,7 +34,7 @@ public class BandHeartRateListener implements BandHeartRateEventListener {
     public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
         Date date = Calendar.getInstance().getTime();
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(date);
-        String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(date);
+        String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(date);
         String data = dateString + "," + timeString + "," +
                 bandHeartRateEvent.getHeartRate() + "," +
                 bandHeartRateEvent.getQuality();

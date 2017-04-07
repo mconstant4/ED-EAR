@@ -30,7 +30,7 @@ public class ChargingReceiver extends BroadcastReceiver {
 
         Calendar calendar = Calendar.getInstance();
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(calendar.getTime());
-        String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(calendar.getTime());
+        String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(calendar.getTime());
         contents = dateString + "," + timeString + "," + String.valueOf(charging);
 
         DataLogService.log(context, chargeFile, contents, HEADER);

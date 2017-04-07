@@ -69,8 +69,10 @@ public class AudioRecordManager extends IntentService {
                         return;
                     }
                 }
-                //Start Recording
-                startAudio(true);
+                //Start Recording if Audio Recordings enabled
+                if (SettingsActivity.getBoolean(this, SettingsActivity.KEY_AUDIO_ENABLE, false)) {
+                    startAudio(true);
+                }
                 break;
             case ACTION_AUDIO_CREATE:
                 log("ACTION_AUDIO_CREATE");
@@ -147,7 +149,7 @@ public class AudioRecordManager extends IntentService {
         File directory = MainActivity.getRootFile(this);
         String wavFileName = "";
         String p_id = SettingsActivity.getString(this, SettingsActivity.KEY_IDENTIFIER, null);
-        if (p_id != null) {
+        if (p_id != null && p_id != "") {
             wavFileName += p_id + "_";
         }
         wavFileName += (new SimpleDateFormat("MM_dd_yyyy", Locale.US).format(new Date()) + "_");

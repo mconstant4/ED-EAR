@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import wbl.egr.uri.sensorcollector.MainActivity;
+import wbl.egr.uri.sensorcollector.SettingsActivity;
 import wbl.egr.uri.sensorcollector.services.DataLogService;
 
 /**
@@ -32,7 +33,7 @@ public class BandAccelerometerListener implements BandAccelerometerEventListener
     public void onBandAccelerometerChanged(BandAccelerometerEvent bandAccelerometerEvent) {
         Date date = Calendar.getInstance().getTime();
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(date);
-        String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(date);
+        String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(date);
         String data = dateString + "," + timeString + "," +
                 (bandAccelerometerEvent.getAccelerationX() * (long)9.81) + "," +
                 (bandAccelerometerEvent.getAccelerationY() * (long)9.81) + "," +

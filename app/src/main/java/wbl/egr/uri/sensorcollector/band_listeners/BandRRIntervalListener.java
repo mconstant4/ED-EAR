@@ -32,7 +32,7 @@ public class BandRRIntervalListener implements BandRRIntervalEventListener {
     public void onBandRRIntervalChanged(BandRRIntervalEvent bandRRIntervalEvent) {
         Date date = Calendar.getInstance().getTime();
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(date);
-        String timeString = new SimpleDateFormat("hh:mm:ss.SSS", Locale.US).format(date);
+        String timeString = new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(date);
         String data = dateString + "," + timeString + "," +
                 bandRRIntervalEvent.getInterval();
         DataLogService.log(mContext, new File(MainActivity.getRootFile(mContext), "rr.csv"), data, HEADER);

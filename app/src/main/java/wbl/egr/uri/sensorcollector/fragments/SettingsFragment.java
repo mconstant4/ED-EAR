@@ -37,6 +37,7 @@ import static wbl.egr.uri.sensorcollector.SettingsActivity.KEY_SENSOR_ENABLE;
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     private SharedPreferences mSharedPreferences;
     private MaterialDialog mBeginStreamDialog;
+    private boolean mConnecting;
 
     private BandUpdateReceiver mBandUpdateReceiver = new BandUpdateReceiver() {
         @Override
@@ -44,12 +45,16 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             try {
                 Log.d("RECEIVE", "update received");
                 if (intent.hasExtra(UPDATE_BAND_CONNECTED)) {
-                    mBeginStreamDialog.show();
-                    mBeginStreamDialog.getActionButton(DialogAction.POSITIVE).setEnabled(false);
-                    BandCollectionService.requestBandInfo(getActivity());
+                    if (mConnecting) {
+                        mBeginStreamDialog.show();
+                        mBeginStreamDialog.getActionButton(DialogAction.POSITIVE).setEnabled(false);
+                        BandCollectionService.requestBandInfo(getActivity());
+                    }
                 } else if (intent.hasExtra(UPDATE_BAND_INFO)) {
-                    mBeginStreamDialog.setTitle("Connected to " + intent.getStringArrayExtra(EXTRA_BAND_INFO)[1]);
-                    mBeginStreamDialog.getActionButton(DialogAction.POSITIVE).setEnabled(true);
+                    if (mConnecting) {
+                        mBeginStreamDialog.setTitle("Connected to " + intent.getStringArrayExtra(EXTRA_BAND_INFO)[1]);
+                        mBeginStreamDialog.getActionButton(DialogAction.POSITIVE).setEnabled(true);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -67,6 +72,8 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         addPreferencesFromResource(R.xml.preferences);
         getActivity().registerReceiver(mBandUpdateReceiver, BandUpdateReceiver.INTENT_FILTER);
 
+        mConnecting = false;
+
         final WeakReference<Activity> activityWeakReference = new WeakReference<Activity>(getActivity());
         mBeginStreamDialog = new MaterialDialog.Builder(getActivity())
                 .title("Connecting...")
@@ -79,6 +86,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                         if (activityWeakReference != null && activityWeakReference.get() != null) {
                             BandCollectionService.startStream(activityWeakReference.get());
                         }
+                        mConnecting = false;
                         mBeginStreamDialog.dismiss();
                     }
                 })
@@ -88,6 +96,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                         if (activityWeakReference != null && activityWeakReference.get() != null) {
                             BandCollectionService.disconnect(activityWeakReference.get());
                         }
+                        mConnecting = false;
                         mBeginStreamDialog.dismiss();
                     }
                 })
@@ -122,6 +131,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                     if (!SettingsActivity.getBoolean(getActivity(), SettingsActivity.KEY_HR_CONSENT, false)) {
                         new RequestHeartRateTask().execute(new WeakReference<Activity>(getActivity()));
                     }
+                    mConnecting = true;
                     BandCollectionService.connect(getActivity());
                 } else {
                     BandCollectionService.disconnect(getActivity());

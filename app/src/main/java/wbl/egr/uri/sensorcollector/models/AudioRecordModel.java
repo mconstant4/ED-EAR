@@ -40,7 +40,7 @@ public class AudioRecordModel {
         if (mStartDate != null) {
             contents += new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(mStartDate);
             contents += ",";
-            contents += new SimpleDateFormat("hh:mm:ss.mmm", Locale.US).format(mStartDate);
+            contents += new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(mStartDate);
             contents += ",";
         } else {
             contents += ",,";
@@ -48,7 +48,7 @@ public class AudioRecordModel {
         if (mEndDate != null) {
             contents += new SimpleDateFormat("MM/dd/yyyy", Locale.US).format(mEndDate);
             contents += ",";
-            contents += new SimpleDateFormat("hh:mm:ss.mmm", Locale.US).format(mEndDate);
+            contents += new SimpleDateFormat("kk:mm:ss.SSS", Locale.US).format(mEndDate);
             contents += ",";
         } else {
             contents += ",,";

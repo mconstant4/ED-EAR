@@ -19,6 +19,7 @@ import wbl.egr.uri.sensorcollector.tasks.RequestHeartRateTask;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_SENSOR_ENABLE = "pref_enable_sensors";
+    public static final String KEY_SENSOR_PERIODIC = "pref_periodic_sensors";
     public static final String KEY_AUDIO_ENABLE = "pref_enable_audio";
     public static final String KEY_HR_CONSENT = "pref_hr_consent";
     public static final String KEY_AUDIO_DURATION = "pref_audio_duration";
