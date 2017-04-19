@@ -29,13 +29,11 @@ public class MainActivity extends Application {
         } else {
             directory = new File(root, ".anear/" + id);
         }
-        String date = new SimpleDateFormat("MM_dd_yyyy", Locale.US).format(new Date());
-        File rootDir = new File(directory, date);
-        if (!rootDir.exists()) {
-            if (rootDir.mkdirs()) {
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
                 Log.d("MAIN", "Made parent directories");
             }
         }
-        return rootDir;
+        return directory;
     }
 }

@@ -227,11 +227,7 @@ public class BandCollectionService extends Service {
                 //Band is off/out of range/disconnected
             }
 
-            //Allow for recording mode to be toggled while this Service is running
-            if (    (mState != STATE_STREAMING || mState != STATE_NOT_WORN) ||
-                    SettingsActivity.getBoolean(mContext, SettingsActivity.KEY_SENSOR_PERIODIC, false)) {
-                mHandler.postDelayed(this, 3 * 60 * 1000);
-            }
+            mHandler.postDelayed(this, 3 * 60 * 1000);
         }
     };
 
@@ -352,6 +348,7 @@ public class BandCollectionService extends Service {
         public void onResult(Void aVoid, Throwable throwable) {
             log("Disconnected");
             mState = STATE_DISCONNECTED;
+            mHandler.removeCallbacks(mDelayedToggle);
             updateNotification("DISCONNECTED", android.R.drawable.presence_offline);
             stopSelf();
         }
@@ -527,9 +524,7 @@ public class BandCollectionService extends Service {
                 log(bandSensorManager.getCurrentHeartRateConsent().name());
                 mState = STATE_STREAMING;
                 updateNotification("STREAMING", android.R.drawable.presence_online);
-                if (SettingsActivity.getBoolean(mContext, SettingsActivity.KEY_SENSOR_PERIODIC, false)) {
-                    mHandler.postDelayed(mDelayedToggle, 3 * 60 * 1000);
-                }
+                mHandler.postDelayed(mDelayedToggle, 3 * 60 * 1000);
                 bandSensorManager.registerAccelerometerEventListener(mBandAccelerometerListener, SampleRate.MS128);
                 bandSensorManager.registerAmbientLightEventListener(mBandAmbientLightListener);
                 bandSensorManager.registerContactEventListener(mBandContactListener);

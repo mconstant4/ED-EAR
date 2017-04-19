@@ -8,12 +8,6 @@
             android:key="pref_enable_sensors"
             android:title="Enable Sensor Recordings"
             android:defaultValue="false"/>
-        <SwitchPreference
-            android:id="@+id/pref_periodic_sensors"
-            android:key="pref_periodic_sensors"
-            android:title="Toggle Recording Mode"
-            android:summary="When enabled, recordings are periodic"
-            android:defaultValue="false"/>
 
     </PreferenceCategory>
     <PreferenceCategory android:title="Audio Settings">
